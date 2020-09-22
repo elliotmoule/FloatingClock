@@ -1,0 +1,36 @@
+﻿<Window x:Class="FloatingClock.AlarmDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FloatingClock"
+        mc:Ignorable="d"
+        ContentRendered="Window_ContentRendered" WindowStartupLocation="CenterScreen" SizeToContent="WidthAndHeight"
+        Title="Set Alarm Clock">
+    <Grid Margin="15">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Image Source="clock.ico" Width="32" Height="32" Stretch="UniformToFill" Grid.RowSpan="2" Margin="20,0"/>
+        <Label x:Name="lblQuestion" Grid.Column="1" Content="Question:"/>
+        <TextBox x:Name="txtAnswer" Grid.Column="1" Grid.Row="1" MinWidth="250" Text="Answer" PreviewTextInput="txtAnswer_PreviewTextInput"/>
+        <WrapPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="0, 5, 0, 0">
+            <Label Content="Time:" MinWidth="40" Padding="0, 2, 0, 0"/>
+            <ComboBox x:Name="cmbTime" MinWidth="60" SelectedIndex="0">
+                <ComboBoxItem Content="Minutes"/>
+                <ComboBoxItem Content="Hours"/>
+            </ComboBox>
+        </WrapPanel>
+        <WrapPanel Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button Content="_Cancel" IsCancel="True" MinWidth="60" Margin="0,0,10,0"/>
+            <Button Content="_Set" IsDefault="True" Name="btnDialogOK" Click="btnDialogOK_Click" MinWidth="60"/>
+        </WrapPanel>
+    </Grid>
+</Window>
