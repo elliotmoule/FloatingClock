@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Media;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -25,9 +26,11 @@ namespace FloatingClock
         private DispatcherTimer alarmTimer;
         private bool timesUp = false;
         private Color originalColor;
-        private List<Label> labels = new List<Label>();
+        private List<TextBlock> labels = new List<TextBlock>();
         private TimeSpan countDown;
         private bool _inFocus = false;
+        private char _currentAppSize = 'l';
+        private bool _isLogoffTimer = false;
 
         [DllImport("user32.dll")]
         static extern bool SetWindowPos(
@@ -78,7 +81,7 @@ namespace FloatingClock
                 currentTime = now;
                 for (int i = 0; i < labels.Count; i++)
                 {
-                    labels[i].Content = now[i].ToString();
+                    labels[i].Text = now[i].ToString();
                 }
 
                 var fullTime = dateTime.ToString(fullPattern);
@@ -120,9 +123,9 @@ namespace FloatingClock
         {
             Application.Current.Activated += Current_Activated;
             Application.Current.Deactivated += Current_Deactivated;
+            AssignElements();
             RestoreWindowPosition();
             VisibilityToggle(this.IsMouseOver);
-            AssignElements();
             DebugCheck();
             TimeKeeper();
             txtCountdown.Visibility = Visibility.Collapsed;
@@ -159,8 +162,21 @@ namespace FloatingClock
             Date.Foreground = newColor;
         }
 
+        private void SetClockFontSize(int size)
+        {
+            for (int i = 0; i < labels.Count; i++)
+            {
+                labels[i].FontSize = size;
+            }
+            period.FontSize = size * 0.74f;
+            Date.FontSize = size * 0.22f;
+            SmallTime.FontSize = size * 0.4f;
+        }
+
         private void RestoreWindowPosition()
         {
+            _currentAppSize = Properties.Settings.Default.AppSize;
+            SetAppSize(_currentAppSize);
             if (Properties.Settings.Default.HasSetDefaults)
             {
                 System.Drawing.Point location = Properties.Settings.Default.Location;
@@ -180,6 +196,7 @@ namespace FloatingClock
         {
             Properties.Settings.Default.Location = GetLocation();
             Properties.Settings.Default.Size = GetSize();
+            Properties.Settings.Default.AppSize = _currentAppSize;
             Properties.Settings.Default.HasSetDefaults = true;
 
             Properties.Settings.Default.Save();
@@ -192,6 +209,9 @@ namespace FloatingClock
             var loc = new System.Drawing.Point((int)Math.Round(x), (int)Math.Round(y));
             Properties.Settings.Default.Location = loc;
             Properties.Settings.Default.Size = GetSize();
+            Properties.Settings.Default.AppSize = 'l';
+            _currentAppSize = 'l';
+            SetAppSize('l');
             Properties.Settings.Default.HasSetDefaults = true;
 
             Properties.Settings.Default.Save();
@@ -209,6 +229,34 @@ namespace FloatingClock
         {
             Application.Current.MainWindow.Width = size.Width;
             Application.Current.MainWindow.Height = size.Height;
+        }
+
+        private void SetAppSize(char letter)
+        {
+            if (letter == 's')
+            {
+                // Small size.
+                SetSize(new System.Drawing.Size(330, 120));
+                Properties.Settings.Default.AppSize = 's';
+                SetClockFontSize(135);
+            }
+            else if (letter == 'm')
+            {
+                // Medium size.
+                SetSize(new System.Drawing.Size(472, 180));
+                Properties.Settings.Default.AppSize = 'm';
+                SetClockFontSize(203);
+            }
+            else
+            {
+                // Large size.
+                SetSize(new System.Drawing.Size(630, 240));
+                Properties.Settings.Default.AppSize = 'l';
+                SetClockFontSize(270);
+                letter = 'l'; // Forces letter to be 'L'.
+            }
+            _currentAppSize = letter;
+            Properties.Settings.Default.Save();
         }
 
         private System.Drawing.Point GetLocation()
@@ -259,13 +307,56 @@ namespace FloatingClock
             if (alarmDialog.ShowDialog() == true)
             {
                 originalColor = GetOriginalColor();
-                int.TryParse(alarmDialog.Answer, out int time);
+                var time = 0;
 
-                // SelectedTimeIndex == 1 ? Hours : Minutes.                
-                alarmTimer = new DispatcherTimer(new TimeSpan(0, 0, 1), DispatcherPriority.Normal, (s, ev) => AlarmTick_Timer(s, ev), Application.Current.Dispatcher);
-                countDown = alarmDialog.SelectedTimeIndex == 1 ? new TimeSpan(time, 0, 0) : new TimeSpan(0, time, 0);
-                Menu_CancelTimer.Visibility = Visibility.Visible;
-                alarmTimer.Start();
+                switch (alarmDialog.SelectedTimeIndex)
+                {
+                    case 0:
+                        // Minutes
+                        int.TryParse(alarmDialog.Answer, out time);
+                        countDown = new TimeSpan(0, time, 0);
+                        break;
+                    case 1:
+                        // Hours
+                        int.TryParse(alarmDialog.Answer, out time);
+                        countDown = new TimeSpan(time, 0, 0);
+                        break;
+                    case 2:
+                        // Specific Time
+                        var split = alarmDialog.Answer.Split(':');
+
+                        if (split.Length < 2)
+                        {
+                            return;
+                        }
+
+                        var hour = 0;
+                        var minute = 0;
+                        int.TryParse(split[0], out hour);
+                        int.TryParse(split[1], out minute);
+
+                        hour = hour > 12 ? hour - 12 : hour;
+                        var now = DateTime.Now;
+                        var d = new DateTime(now.Year, now.Month, now.Day, hour, minute, 0);
+                        if (now > d)
+                        {
+                            d = new DateTime(now.Year, now.Month, now.Day, hour + 12, minute, 0);
+                        }
+                        countDown = d.Subtract(new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0));
+                        break;
+                    default:
+                        countDown = TimeSpan.Zero;
+                        break;
+                }
+
+                if (countDown != TimeSpan.Zero)
+                {
+                    alarmTimer = new DispatcherTimer(new TimeSpan(0, 0, 1), DispatcherPriority.Normal, (s, ev) => AlarmTick_Timer(s, ev), Application.Current.Dispatcher);
+
+                    Menu_CancelTimer.Visibility = Visibility.Visible;
+                    Menu_TimerSeperator.Visibility = Visibility.Visible;
+                    alarmTimer.Start();
+                }
             }
         }
 
@@ -284,6 +375,13 @@ namespace FloatingClock
                     SetClockColor(originalColor);
                 });
             });
+
+            if (_isLogoffTimer)
+            {
+                _isLogoffTimer = false;
+                // Abort Logoff timer.
+                Process.Start("Shutdown", "/a");
+            }
         }
 
         private void RemoveAlarmTimer()
@@ -291,6 +389,7 @@ namespace FloatingClock
             if (alarmTimer != null)
             {
                 Menu_CancelTimer.Visibility = Visibility.Collapsed;
+                Menu_TimerSeperator.Visibility = Visibility.Collapsed;
                 timesUp = false;
                 alarmTimer.Stop();
                 alarmTimer.Tick -= AlarmTick_Timer;
@@ -328,6 +427,22 @@ namespace FloatingClock
             }
         }
 
+        private void LogoutTick_Timer(object sender, EventArgs e)
+        {
+            txtCountdown.Text = countDown.ToString("c");
+            if (countDown != TimeSpan.Zero)
+            {
+                txtCountdown.Visibility = Visibility.Visible;
+                countDown = countDown.Add(TimeSpan.FromSeconds(-1));
+            }
+            else
+            {
+                txtCountdown.Visibility = Visibility.Collapsed;
+                timesUp = true;
+                RemoveAlarmTimer();
+            }
+        }
+
         private Color GetOriginalColor()
         {
             return (period.Foreground as SolidColorBrush).Color;
@@ -346,6 +461,94 @@ namespace FloatingClock
                && key == Key.Escape)
             {
                 ResetWindowPosition();
+            }
+        }
+
+        private void Menu_SetSizeSmall_Click(object sender, RoutedEventArgs e)
+        {
+            _currentAppSize = 's';
+            SetAppSize(_currentAppSize);
+            SaveWindowPosition();
+        }
+
+        private void Menu_SetSizeMedium_Click(object sender, RoutedEventArgs e)
+        {
+            _currentAppSize = 'm';
+            SetAppSize(_currentAppSize);
+            SaveWindowPosition();
+        }
+
+        private void Menu_SetSizeLarge_Click(object sender, RoutedEventArgs e)
+        {
+            _currentAppSize = 'l';
+            SetAppSize(_currentAppSize);
+            SaveWindowPosition();
+        }
+
+        private void Menu_SetLogoutTimer_Click(object sender, RoutedEventArgs e)
+        {
+            RemoveAlarmTimer();
+            AlarmDialog alarmDialog = new AlarmDialog("When do you want to logout?", "480");
+
+            if (alarmDialog.ShowDialog() == true)
+            {
+                originalColor = GetOriginalColor();
+
+                var time = 0;
+
+                switch (alarmDialog.SelectedTimeIndex)
+                {
+                    case 0:
+                        // Minutes
+                        int.TryParse(alarmDialog.Answer, out time);
+                        countDown = new TimeSpan(0, time, 0);
+                        break;
+                    case 1:
+                        // Hours
+                        int.TryParse(alarmDialog.Answer, out time);
+                        countDown = new TimeSpan(time, 0, 0);
+                        break;
+                    case 2:
+                        // Specific Time
+                        var split = alarmDialog.Answer.Split(':');
+
+                        if (split.Length < 2)
+                        {
+                            return;
+                        }
+
+                        var hour = 0;
+                        var minute = 0;
+                        int.TryParse(split[0], out hour);
+                        int.TryParse(split[1], out minute);
+                        hour = hour > 12 ? hour - 12 : hour;
+                        var now = DateTime.Now;
+                        var d = new DateTime(now.Year, now.Month, now.Day, hour, minute, 0);
+                        if (now > d)
+                        {
+                            d = new DateTime(now.Year, now.Month, now.Day, hour + 12, minute, 0);
+                        }
+                        countDown = d.Subtract(new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0));
+                        break;
+                    default:
+                        countDown = TimeSpan.Zero;
+                        break;
+                }
+
+                if (countDown != TimeSpan.Zero)
+                {
+                    _isLogoffTimer = true;
+                    alarmTimer = new DispatcherTimer(new TimeSpan(0, 0, 1), DispatcherPriority.Normal, (s, ev) => LogoutTick_Timer(s, ev), Application.Current.Dispatcher);
+                    Menu_CancelTimer.Visibility = Visibility.Visible;
+                    Menu_TimerSeperator.Visibility = Visibility.Visible;
+                    alarmTimer.Start();
+                    var arguments = $"/s /f /t {countDown.TotalSeconds}";
+                    Process.Start("Shutdown", arguments);
+                }
+                else
+                {
+                    MessageBox.Show("Unable to parse provided time.");
+                }
             }
         }
     }

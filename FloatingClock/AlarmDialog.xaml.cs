@@ -38,7 +38,7 @@ namespace FloatingClock
 
         private void btnDialogOK_Click(object sender, RoutedEventArgs e)
         {
-            if (ValidResult(Answer) && !string.IsNullOrWhiteSpace(Answer))
+            if (!string.IsNullOrWhiteSpace(Answer) && ((SelectedTimeIndex == 2 && Answer.Contains(':')) || (SelectedTimeIndex != 2 && ValidResult(Answer))))
             {
                 this.DialogResult = true;
             }
@@ -59,7 +59,8 @@ namespace FloatingClock
 
         private bool ValidResult(string toTest)
         {
-            Regex regex = new Regex("[^0-9]+");
+            var expression = SelectedTimeIndex == 2 ? "[^0-9,:]+" : "[^0-9]+";
+            Regex regex = new Regex(expression);
             if (regex.IsMatch(toTest))
             {
                 return false;

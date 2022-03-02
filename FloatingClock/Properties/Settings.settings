@@ -11,5 +11,8 @@
     <Setting Name="HasSetDefaults" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="AppSize" Type="System.Char" Scope="User">
+      <Value Profile="(Default)">l</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

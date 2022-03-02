@@ -26,6 +26,7 @@
             <ComboBox x:Name="cmbTime" MinWidth="60" SelectedIndex="0">
                 <ComboBoxItem Content="Minutes"/>
                 <ComboBoxItem Content="Hours"/>
+                <ComboBoxItem Content="Time (hh:mm)"/>
             </ComboBox>
         </WrapPanel>
         <WrapPanel Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="0,15,0,0">

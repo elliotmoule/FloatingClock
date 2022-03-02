@@ -4,8 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FloatingClock"
-        mc:Ignorable="d" MinHeight="240" Height="240"
-        MaxHeight="240" Width="630" MinWidth="630" MaxWidth="630"
+        mc:Ignorable="d" Height="240"
+        MaxHeight="240" Width="630" MaxWidth="630"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent" MouseDown="Window_MouseDown" ResizeMode="NoResize"
@@ -18,20 +18,73 @@
             <Grid x:Name="BackingGrid" Background="#02808080" Cursor="Hand">
                 <Grid.ContextMenu>
                     <ContextMenu>
-                        <MenuItem x:Name="Menu_SetTimer" Header="Set Timer" Click="Menu_SetTimer_Click"/>
-                        <MenuItem x:Name="Menu_CancelTimer" Header="Cancel Timer" Click="Menu_CancelTimer_Click" Visibility="Collapsed"/>
+                        <MenuItem Header="Timers">
+                            <MenuItem x:Name="Menu_SetTimer" Header="Set Timer" Click="Menu_SetTimer_Click"/>
+                            <MenuItem x:Name="Menu_SetLogoutTimer" Header="Logout Timer" Click="Menu_SetLogoutTimer_Click"/>
+                            <Separator x:Name="Menu_TimerSeperator" Visibility="Collapsed"/>
+                            <MenuItem x:Name="Menu_CancelTimer" Header="Cancel Timer" Click="Menu_CancelTimer_Click" Visibility="Collapsed"/>
+                        </MenuItem>
+                        
                         <Separator />
                         <MenuItem x:Name="Menu_ResetPosition" Header="Reset Start Position" Click="Menu_ResetPosition_Click"/>
+                        <Separator />
+                        <MenuItem Header="App Size">
+                            <MenuItem x:Name="Menu_SetSizeSmall" Header="Small" Click="Menu_SetSizeSmall_Click"/>
+                            <MenuItem x:Name="Menu_SetSizeMedium" Header="Medium" Click="Menu_SetSizeMedium_Click"/>
+                            <MenuItem x:Name="Menu_SetSizeLarge" Header="Large" Click="Menu_SetSizeLarge_Click"/>
+                        </MenuItem>
                         <Separator />
                         <MenuItem x:Name="Menu_Quit" Header="Quit" Click="Menu_Quit_Click"/>
                     </ContextMenu>
                 </Grid.ContextMenu>
             </Grid>
-            <Grid x:Name="ShortDate" IsHitTestVisible="False" Visibility="Visible" Margin="0, -80">
+            <StackPanel x:Name="ShortDate" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock x:Name="t1" Text="8" Foreground="White" FontSize="130" TextAlignment="Center" Margin="0,-60">
+                    <TextBlock.Effect>
+                        <DropShadowEffect ShadowDepth="0"
+                                      Color="Black"
+                                      Opacity="1"
+                                      BlurRadius="5"/>
+                    </TextBlock.Effect>
+                </TextBlock>
+                <TextBlock x:Name="t2" Text="8" Foreground="White" FontSize="130" TextAlignment="Center" Margin="0,-60">
+                    <TextBlock.Effect>
+                        <DropShadowEffect ShadowDepth="0"
+                                      Color="Black"
+                                      Opacity="1"
+                                      BlurRadius="5"/>
+                    </TextBlock.Effect>
+                    </TextBlock>
+                <TextBlock x:Name="period" Text=":" Grid.Column="2" Foreground="White" FontSize="120" TextAlignment="Center" Margin="0,-35">
+                    <TextBlock.Effect>
+                        <DropShadowEffect ShadowDepth="0"
+                                      Color="Black"
+                                      Opacity="1"
+                                      BlurRadius="5"/>
+                    </TextBlock.Effect>
+                </TextBlock>
+                <TextBlock x:Name="t3" Text="8" Grid.Column="3" Foreground="White" FontSize="130" TextAlignment="Center" Margin="0,-60">
+                    <TextBlock.Effect>
+                        <DropShadowEffect ShadowDepth="0"
+                                      Color="Black"
+                                      Opacity="1"
+                                      BlurRadius="5"/>
+                    </TextBlock.Effect>
+                </TextBlock>
+                <TextBlock x:Name="t4" Text="8" Grid.Column="4" Foreground="White" FontSize="130" TextAlignment="Center" Margin="0,-60">
+                    <TextBlock.Effect>
+                        <DropShadowEffect ShadowDepth="0"
+                                      Color="Black"
+                                      Opacity="1"
+                                      BlurRadius="5"/>
+                    </TextBlock.Effect>
+                </TextBlock>
+            </StackPanel>
+            <!--<Grid x:Name="ShortDate" IsHitTestVisible="False" Visibility="Visible" Margin="0, -60">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition />
-                    <ColumnDefinition Width="0.3*"/>
+                    <ColumnDefinition Width="auto"/>
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
@@ -51,7 +104,7 @@
                                       BlurRadius="5"/>
                     </Label.Effect>
                 </Label>
-                <Label x:Name="period" Content=":" Grid.Column="2" Foreground="White" FontSize="200" Margin="0, 40" >
+                <Label x:Name="period" Content=":" Grid.Column="2" Foreground="White" FontSize="200" Margin="0, 20" >
                     <Label.Effect>
                         <DropShadowEffect ShadowDepth="0"
                                       Color="Black"
@@ -75,7 +128,7 @@
                                       BlurRadius="5"/>
                     </Label.Effect>
                 </Label>
-            </Grid>
+            </Grid>-->
             <StackPanel x:Name="FullDate" Visibility="Visible" IsHitTestVisible="False" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock x:Name="SmallTime" Text="88:88" FontSize="110" TextAlignment="Center" Foreground="White">
                     <TextBlock.Effect>
