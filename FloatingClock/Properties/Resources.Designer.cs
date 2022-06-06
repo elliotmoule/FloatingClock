@@ -77,5 +77,14 @@ namespace FloatingClock.Properties {
                 return ResourceManager.GetStream("Grandfather_clock_chimes", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream Grandfather_clock_chimes_quiet {
+            get {
+                return ResourceManager.GetStream("Grandfather_clock_chimes_quiet", resourceCulture);
+            }
+        }
     }
 }

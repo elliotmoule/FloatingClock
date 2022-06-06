@@ -118,5 +118,8 @@
   <ItemGroup>
     <None Include="Resources\Grandfather-clock-chimes.wav" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Grandfather-clock-chimes-quiet.wav" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

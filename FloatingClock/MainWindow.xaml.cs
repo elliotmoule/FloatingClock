@@ -76,7 +76,7 @@ namespace FloatingClock
         private void MainWindow_HourReached(object sender, EventArgs e)
         {
             SetClockColor(Colors.CornflowerBlue);
-            SoundPlayer player = new SoundPlayer(Properties.Resources.Grandfather_clock_chimes);
+            SoundPlayer player = new SoundPlayer(Properties.Resources.Grandfather_clock_chimes_quiet);
             player.Play();
             Task.Factory.StartNew(() =>
             {
