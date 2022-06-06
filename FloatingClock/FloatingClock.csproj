@@ -112,5 +112,11 @@
   <ItemGroup>
     <Resource Include="clock.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Alarm-ringtone.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Grandfather-clock-chimes.wav" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

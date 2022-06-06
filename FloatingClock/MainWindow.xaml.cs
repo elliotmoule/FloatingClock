@@ -64,21 +64,72 @@ namespace FloatingClock
         {
             if (timer == null) timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 500) };
 
+            MinuteReached += MainWindow_MinuteReached;
+            HourReached += MainWindow_HourReached;
+
             SetTime();
 
             timer.Tick += Timer_Tick;
             timer.Start();
         }
 
+        private void MainWindow_HourReached(object sender, EventArgs e)
+        {
+            SetClockColor(Colors.CornflowerBlue);
+            SoundPlayer player = new SoundPlayer(Properties.Resources.Grandfather_clock_chimes);
+            player.Play();
+            Task.Factory.StartNew(() =>
+            {
+                Thread.Sleep(2500);
+                SetClockColor(originalColor);
+            });
+        }
+
+        private void MainWindow_MinuteReached(object sender, EventArgs e)
+        {
+
+        }
+
+        public event EventHandler MinuteReached;
+        public event EventHandler HourReached;
+
         private void Timer_Tick(object sender, EventArgs e) => SetTime();
 
         private void SetTime()
         {
+            var oldTime = currentTime;
             var dateTime = DateTime.Now;
             var now = dateTime.ToString(shortPattern);
             if (currentTime != now)
             {
                 currentTime = now;
+                if (oldTime == null)
+                {
+                    oldTime = currentTime;
+                }
+                Task.Factory.StartNew(() =>
+                {
+                    // Separate process to not block UI thread.                    
+                    var oldHour = oldTime.Substring(0, 2);
+                    var oldMinute = oldTime.Substring(2, 2);
+                    var newHour = now.Substring(0, 2);
+                    var newMinute = now.Substring(2, 2);
+
+                    int.TryParse(oldHour, out int oldHourInt);
+                    int.TryParse(newHour, out int newHourInt);
+                    int.TryParse(oldMinute, out int oldMinuteInt);
+                    int.TryParse(newMinute, out int newMinuteInt);
+
+                    if (oldHourInt + 1 == newHourInt)
+                    {
+                        HourReached?.Invoke(this, EventArgs.Empty);
+                    }
+
+                    if (oldMinuteInt + 1 == newMinuteInt)
+                    {
+                        MinuteReached?.Invoke(this, EventArgs.Empty);
+                    }
+                });
                 for (int i = 0; i < labels.Count; i++)
                 {
                     labels[i].Text = now[i].ToString();
@@ -152,14 +203,17 @@ namespace FloatingClock
 
         private void SetClockColor(Color color)
         {
-            SolidColorBrush newColor = new SolidColorBrush(color);
-            for (int i = 0; i < labels.Count; i++)
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                labels[i].Foreground = newColor;
-            }
-            period.Foreground = newColor;
-            SmallTime.Foreground = newColor;
-            Date.Foreground = newColor;
+                SolidColorBrush newColor = new SolidColorBrush(color);
+                for (int i = 0; i < labels.Count; i++)
+                {
+                    labels[i].Foreground = newColor;
+                }
+                period.Foreground = newColor;
+                SmallTime.Foreground = newColor;
+                Date.Foreground = newColor;
+            });
         }
 
         private void SetClockFontSize(int size)
@@ -370,10 +424,7 @@ namespace FloatingClock
             Task.Factory.StartNew(() =>
             {
                 Thread.Sleep(700);
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    SetClockColor(originalColor);
-                });
+                SetClockColor(originalColor);
             });
 
             if (_isLogoffTimer)
@@ -410,19 +461,22 @@ namespace FloatingClock
                 txtCountdown.Visibility = Visibility.Collapsed;
                 timesUp = true;
                 RemoveAlarmTimer();
-                SetClockColor(Colors.Red);
+
                 Task.Factory.StartNew(() =>
                 {
-                    SystemSounds.Beep.Play();
+                    SetClockColor(Colors.Red);
+                    var alarmSound = new SoundPlayer(Properties.Resources.Alarm_ringtone);
+                    alarmSound.PlaySync();
                     for (int i = 0; i < 4; i++)
                     {
-                        Thread.Sleep(700);
-                        SystemSounds.Beep.Play();
+                        SetClockColor(Colors.Red);
+                        Thread.Sleep(500);
+                        SetClockColor(Colors.DarkRed);
+                        alarmSound.PlaySync();
                     }
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        SetClockColor(originalColor);
-                    });
+
+                    alarmSound.Stop();
+                    SetClockColor(originalColor);
                 });
             }
         }
