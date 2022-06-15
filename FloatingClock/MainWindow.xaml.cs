@@ -179,6 +179,7 @@ namespace FloatingClock
             VisibilityToggle(this.IsMouseOver);
             DebugCheck();
             TimeKeeper();
+            originalColor = GetOriginalColor();
             txtCountdown.Visibility = Visibility.Collapsed;
             this.Visibility = Visibility.Visible;
         }
