@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Media;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,19 +21,30 @@ namespace FloatingClock
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region Fields
         private string currentTime;
-        private string shortPattern = "HHmm";
-        private string fullPattern = "ddd, dd MMM yyyy";
+        private readonly string shortPattern = "HHmm";
+        private readonly string fullPattern = "ddd, dd MMM yyyy";
         private DispatcherTimer timer;
         private DispatcherTimer alarmTimer;
         private bool timesUp = false;
         private Color originalColor;
-        private List<TextBlock> labels = new List<TextBlock>();
+        private readonly List<TextBlock> labels = new List<TextBlock>();
         private TimeSpan countDown;
-        private bool _inFocus = false;
-        private char _currentAppSize = 'l';
+        private AppSize _currentAppSize = AppSize.Large;
         private bool _isLogoffTimer = false;
+        private const string _companyDirectoryName = "EMSTechnologies";
+        private const string _appDirectoryName = "FloatingClock";
+        private const string _propertiesFileName = "FloatingClock.json";
+        #endregion
 
+        #region Properties
+        public string SaveLocation { get; set; }
+        public static bool HasLoaded { get; set; }
+        public static string AppDirectoryLocation => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), _companyDirectoryName, _appDirectoryName);
+        #endregion
+
+        #region System Calls
         [DllImport("user32.dll")]
         static extern bool SetWindowPos(
             IntPtr hWnd,
@@ -46,10 +59,31 @@ namespace FloatingClock
         const UInt32 SWP_NOACTIVATE = 0x0010;
 
         static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
+        #endregion
+
+        internal static AppProperties AppProperties { get; } = new AppProperties();
 
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private static void SaveAppProperties()
+        {
+            if (HasLoaded)
+            {
+                try
+                {
+                    var propertiesFilePath = Path.Combine(AppDirectoryLocation, _propertiesFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(propertiesFilePath));
+                    var appPropertiesJson = JsonSerializer.Serialize(AppProperties);
+                    File.WriteAllText(propertiesFilePath, appPropertiesJson);
+                }
+                catch
+                {
+                    MessageBox.Show("Failed to save app properties!");
+                }
+            }
         }
 
         private void AssignElements()
@@ -100,15 +134,22 @@ namespace FloatingClock
             {
                 if (e.ChangedButton == MouseButton.Left)
                 {
-
                     if (alarmTimer != null && timesUp)
                     {
                         RemoveAlarmTimer();
                     }
                     else
                     {
+                        if (AppProperties != null && AppProperties.LockPosition)
+                        {
+                            return;
+                        }
                         Border.BorderBrush = Brushes.LawnGreen;
                         this.DragMove();
+                        if (e.LeftButton == MouseButtonState.Released)
+                        {
+                            SaveWindowPosition();
+                        }
                     }
                 }
             }
@@ -121,7 +162,22 @@ namespace FloatingClock
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Application.Current.Activated += Current_Activated;
+            try
+            {
+                var propertiesFilePath = Path.Combine(AppDirectoryLocation, _propertiesFileName);
+                Directory.CreateDirectory(Path.GetDirectoryName(propertiesFilePath));
+                if (File.Exists(propertiesFilePath))
+                {
+                    MapAppProperties(JsonSerializer.Deserialize<AppProperties>(File.ReadAllText(propertiesFilePath)));
+                }
+            }
+            catch
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show("Failed to loadapp properties!");
+                });
+            }
             Application.Current.Deactivated += Current_Deactivated;
             AssignElements();
             RestoreWindowPosition();
@@ -130,16 +186,25 @@ namespace FloatingClock
             TimeKeeper();
             txtCountdown.Visibility = Visibility.Collapsed;
             this.Visibility = Visibility.Visible;
+            HasLoaded = true;
         }
 
-        private void Current_Activated(object sender, EventArgs e)
+        private void MapAppProperties(AppProperties newAppProperties)
         {
-            _inFocus = true;
+            if (newAppProperties == null)
+            {
+                return;
+            }
+
+            AppProperties.AppSize = newAppProperties.AppSize;
+            AppProperties.Size = newAppProperties.Size;
+            AppProperties.Location = newAppProperties.Location;
+            AppProperties.OldLocation = newAppProperties.OldLocation;
+            AppProperties.LockPosition = newAppProperties.LockPosition;
         }
 
         private void Current_Deactivated(object sender, EventArgs e)
         {
-            _inFocus = false;
             SendToBack();
         }
 
@@ -175,15 +240,12 @@ namespace FloatingClock
 
         private void RestoreWindowPosition()
         {
-            _currentAppSize = Properties.Settings.Default.AppSize;
+            _currentAppSize = AppProperties.AppSize;
+            var location = AppProperties == null ? System.Drawing.Point.Empty : (AppProperties.LockPosition && AppProperties.OldLocation != System.Drawing.Point.Empty ? AppProperties.OldLocation : AppProperties.Location);
+
             SetAppSize(_currentAppSize);
-            if (Properties.Settings.Default.HasSetDefaults)
-            {
-                System.Drawing.Point location = Properties.Settings.Default.Location;
-                SetLocation(location);
-                System.Drawing.Size size = Properties.Settings.Default.Size;
-                SetSize(size);
-            }
+            SetLocation(location);
+            SetSize(AppProperties.Size);
         }
 
         private void SendToBack()
@@ -194,27 +256,26 @@ namespace FloatingClock
 
         private void SaveWindowPosition()
         {
-            Properties.Settings.Default.Location = GetLocation();
-            Properties.Settings.Default.Size = GetSize();
-            Properties.Settings.Default.AppSize = _currentAppSize;
-            Properties.Settings.Default.HasSetDefaults = true;
+            AppProperties.Location = GetLocation();
+            AppProperties.Size = GetSize();
+            AppProperties.AppSize = _currentAppSize;
 
-            Properties.Settings.Default.Save();
+            SaveAppProperties();
         }
 
         private void ResetWindowPosition()
         {
+            AppProperties.LockPosition = false;
             var x = (SystemParameters.PrimaryScreenWidth / 2) - (this.Width / 2);
             var y = (SystemParameters.PrimaryScreenHeight / 2) - (this.Height / 2);
             var loc = new System.Drawing.Point((int)Math.Round(x), (int)Math.Round(y));
-            Properties.Settings.Default.Location = loc;
-            Properties.Settings.Default.Size = GetSize();
-            Properties.Settings.Default.AppSize = 'l';
-            _currentAppSize = 'l';
-            SetAppSize('l');
-            Properties.Settings.Default.HasSetDefaults = true;
+            AppProperties.Location = loc;
+            AppProperties.Size = GetSize();
+            AppProperties.AppSize = AppSize.Large;
+            _currentAppSize = AppSize.Large;
+            SetAppSize(AppSize.Large);
 
-            Properties.Settings.Default.Save();
+            SaveAppProperties();
 
             SetLocation(loc);
         }
@@ -231,32 +292,32 @@ namespace FloatingClock
             Application.Current.MainWindow.Height = size.Height;
         }
 
-        private void SetAppSize(char letter)
+        private void SetAppSize(AppSize appSize)
         {
-            if (letter == 's')
+            if (appSize == AppSize.Small)
             {
                 // Small size.
                 SetSize(new System.Drawing.Size(330, 120));
-                Properties.Settings.Default.AppSize = 's';
+                AppProperties.AppSize = AppSize.Small;
                 SetClockFontSize(135);
             }
-            else if (letter == 'm')
+            else if (appSize == AppSize.Medium)
             {
                 // Medium size.
                 SetSize(new System.Drawing.Size(472, 180));
-                Properties.Settings.Default.AppSize = 'm';
+                AppProperties.AppSize = AppSize.Medium;
                 SetClockFontSize(203);
             }
             else
             {
                 // Large size.
                 SetSize(new System.Drawing.Size(630, 240));
-                Properties.Settings.Default.AppSize = 'l';
+                AppProperties.AppSize = AppSize.Large;
                 SetClockFontSize(270);
-                letter = 'l'; // Forces letter to be 'L'.
+                appSize = AppSize.Large; // Forces letter to be 'L'.
             }
-            _currentAppSize = letter;
-            Properties.Settings.Default.Save();
+            _currentAppSize = appSize;
+            SaveAppProperties();
         }
 
         private System.Drawing.Point GetLocation()
@@ -466,21 +527,21 @@ namespace FloatingClock
 
         private void Menu_SetSizeSmall_Click(object sender, RoutedEventArgs e)
         {
-            _currentAppSize = 's';
+            _currentAppSize = AppSize.Small;
             SetAppSize(_currentAppSize);
             SaveWindowPosition();
         }
 
         private void Menu_SetSizeMedium_Click(object sender, RoutedEventArgs e)
         {
-            _currentAppSize = 'm';
+            _currentAppSize = AppSize.Medium;
             SetAppSize(_currentAppSize);
             SaveWindowPosition();
         }
 
         private void Menu_SetSizeLarge_Click(object sender, RoutedEventArgs e)
         {
-            _currentAppSize = 'l';
+            _currentAppSize = AppSize.Large;
             SetAppSize(_currentAppSize);
             SaveWindowPosition();
         }
@@ -549,6 +610,23 @@ namespace FloatingClock
                 {
                     MessageBox.Show("Unable to parse provided time.");
                 }
+            }
+        }
+
+        private void LockPositionMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            AppProperties.LockPosition = !AppProperties.LockPosition;
+            AppProperties.OldLocation = AppProperties.Location;
+            SaveAppProperties();
+        }
+
+        private void Window_LocationChanged(object sender, EventArgs e)
+        {
+            if (AppProperties != null && AppProperties.LockPosition
+                && GetLocation() != AppProperties.Location)
+            {
+                // In the event the window position is moved while it's locked (thus not the user), then restore the original position.
+                RestoreWindowPosition();
             }
         }
     }

@@ -12,7 +12,8 @@
         Closing="Window_Closing" Loaded="Window_Loaded" Icon="clock.png"
         MouseUp="Window_MouseUp" MouseEnter="Window_MouseEnter"
         MouseLeave="Window_MouseLeave"
-        Visibility="Visible" PreviewKeyDown="Window_PreviewKeyDown">
+        Visibility="Visible" PreviewKeyDown="Window_PreviewKeyDown"
+        LocationChanged="Window_LocationChanged">
     <Border x:Name="Border" BorderBrush="Transparent" BorderThickness="2">
         <Grid Background="Transparent">
             <Grid x:Name="BackingGrid" Background="#02808080" Cursor="Hand">
@@ -24,15 +25,16 @@
                             <Separator x:Name="Menu_TimerSeperator" Visibility="Collapsed"/>
                             <MenuItem x:Name="Menu_CancelTimer" Header="Cancel Timer" Click="Menu_CancelTimer_Click" Visibility="Collapsed"/>
                         </MenuItem>
-                        
-                        <Separator />
-                        <MenuItem x:Name="Menu_ResetPosition" Header="Reset Start Position" Click="Menu_ResetPosition_Click"/>
                         <Separator />
                         <MenuItem Header="App Size">
                             <MenuItem x:Name="Menu_SetSizeSmall" Header="Small" Click="Menu_SetSizeSmall_Click"/>
                             <MenuItem x:Name="Menu_SetSizeMedium" Header="Medium" Click="Menu_SetSizeMedium_Click"/>
                             <MenuItem x:Name="Menu_SetSizeLarge" Header="Large" Click="Menu_SetSizeLarge_Click"/>
                         </MenuItem>
+                        <Separator />
+                        <MenuItem x:Name="LockPositionMenuItem" Header="Lock Position" Click="LockPositionMenuItem_Click"/>
+                        <MenuItem x:Name="Menu_ResetPosition" Header="Reset Start Position" Click="Menu_ResetPosition_Click"/>
+
                         <Separator />
                         <MenuItem x:Name="Menu_Quit" Header="Quit" Click="Menu_Quit_Click"/>
                     </ContextMenu>
@@ -54,7 +56,7 @@
                                       Opacity="1"
                                       BlurRadius="5"/>
                     </TextBlock.Effect>
-                    </TextBlock>
+                </TextBlock>
                 <TextBlock x:Name="period" Text=":" Grid.Column="2" Foreground="White" FontSize="120" TextAlignment="Center" Margin="0,-35">
                     <TextBlock.Effect>
                         <DropShadowEffect ShadowDepth="0"
