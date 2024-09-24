@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Threading;
 
 namespace FloatingClock
@@ -29,10 +30,14 @@ namespace FloatingClock
         private DispatcherTimer alarmTimer;
         private bool timesUp = false;
         private Color originalColor;
+        private Color defaultEdgeHighlightColor = Colors.Black;
+        private Color edgeHighlightColor = Colors.LawnGreen;
         private readonly List<TextBlock> labels = new List<TextBlock>();
         private TimeSpan countDown;
         private AppSize _currentAppSize = AppSize.Large;
         private bool _isLogoffTimer = false;
+        private readonly DropShadowEffect[] _dropShadowEffects = new DropShadowEffect[7];
+
         private const string _companyDirectoryName = "EMSTechnologies";
         private const string _appDirectoryName = "FloatingClock";
         private const string _propertiesFileName = "FloatingClock.json";
@@ -66,6 +71,30 @@ namespace FloatingClock
         public MainWindow()
         {
             InitializeComponent();
+            LoadDropShadowControls();
+        }
+
+        private void LoadDropShadowControls()
+        {
+            _dropShadowEffects[0] = Shadow0;
+            _dropShadowEffects[1] = Shadow1;
+            _dropShadowEffects[2] = Shadow2;
+            _dropShadowEffects[3] = Shadow3;
+            _dropShadowEffects[4] = Shadow4;
+            _dropShadowEffects[5] = Shadow5;
+            _dropShadowEffects[6] = Shadow6;
+        }
+
+        private void UpdateShadowColor(Color color)
+        {
+            foreach (var dropShadowEffect in _dropShadowEffects)
+            {
+                if (dropShadowEffect == null)
+                {
+                    continue;
+                }
+                dropShadowEffect.Color = color;
+            }
         }
 
         private static void SaveAppProperties()
@@ -110,7 +139,7 @@ namespace FloatingClock
         private void MainWindow_HourReached(object sender, EventArgs e)
         {
             SetClockColor(Colors.CornflowerBlue);
-            SoundPlayer player = new SoundPlayer(Properties.Resources.Grandfather_clock_chimes_quiet);
+            var player = new SoundPlayer(Properties.Resources.Grandfather_clock_chimes_quiet);
             player.Play();
             Task.Factory.StartNew(() =>
             {
@@ -195,11 +224,14 @@ namespace FloatingClock
                         {
                             return;
                         }
-                        Border.BorderBrush = Brushes.LawnGreen;
+                        Border.BorderBrush = new SolidColorBrush(edgeHighlightColor);
+                        UpdateShadowColor(edgeHighlightColor);
                         this.DragMove();
                         if (e.LeftButton == MouseButtonState.Released)
                         {
                             SaveWindowPosition();
+                            Border.BorderBrush = Brushes.Transparent;
+                            UpdateShadowColor(defaultEdgeHighlightColor);
                         }
                     }
                 }
@@ -271,7 +303,7 @@ namespace FloatingClock
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                SolidColorBrush newColor = new SolidColorBrush(color);
+                var newColor = new SolidColorBrush(color);
                 for (int i = 0; i < labels.Count; i++)
                 {
                     labels[i].Foreground = newColor;
@@ -296,7 +328,11 @@ namespace FloatingClock
         private void RestoreWindowPosition()
         {
             _currentAppSize = AppProperties.AppSize;
-            var location = AppProperties == null ? System.Drawing.Point.Empty : (AppProperties.LockPosition && AppProperties.OldLocation != System.Drawing.Point.Empty ? AppProperties.OldLocation : AppProperties.Location);
+            var location = AppProperties == null ?
+                System.Drawing.Point.Empty :
+                    (AppProperties.LockPosition && AppProperties.OldLocation != System.Drawing.Point.Empty ?
+                    AppProperties.OldLocation :
+                    AppProperties.Location);
 
             SetAppSize(_currentAppSize);
             SetLocation(location);
@@ -418,7 +454,7 @@ namespace FloatingClock
         private void Menu_SetTimer_Click(object sender, RoutedEventArgs e)
         {
             RemoveAlarmTimer();
-            AlarmDialog alarmDialog = new AlarmDialog("How long do you want the timer for?", "10");
+            var alarmDialog = new AlarmDialog("How long do you want the timer for?", "10");
 
             if (alarmDialog.ShowDialog() == true)
             {

@@ -43,7 +43,7 @@
             <StackPanel x:Name="ShortDate" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock x:Name="t1" Text="8" Foreground="White" FontSize="130" TextAlignment="Center" Margin="0,-60">
                     <TextBlock.Effect>
-                        <DropShadowEffect ShadowDepth="0"
+                        <DropShadowEffect x:Name="Shadow0" ShadowDepth="0"
                                       Color="Black"
                                       Opacity="1"
                                       BlurRadius="5"/>
@@ -51,7 +51,7 @@
                 </TextBlock>
                 <TextBlock x:Name="t2" Text="8" Foreground="White" FontSize="130" TextAlignment="Center" Margin="0,-60">
                     <TextBlock.Effect>
-                        <DropShadowEffect ShadowDepth="0"
+                        <DropShadowEffect x:Name="Shadow1" ShadowDepth="0"
                                       Color="Black"
                                       Opacity="1"
                                       BlurRadius="5"/>
@@ -59,7 +59,7 @@
                 </TextBlock>
                 <TextBlock x:Name="period" Text=":" Grid.Column="2" Foreground="White" FontSize="120" TextAlignment="Center" Margin="0,-35">
                     <TextBlock.Effect>
-                        <DropShadowEffect ShadowDepth="0"
+                        <DropShadowEffect x:Name="Shadow2" ShadowDepth="0"
                                       Color="Black"
                                       Opacity="1"
                                       BlurRadius="5"/>
@@ -67,7 +67,7 @@
                 </TextBlock>
                 <TextBlock x:Name="t3" Text="8" Grid.Column="3" Foreground="White" FontSize="130" TextAlignment="Center" Margin="0,-60">
                     <TextBlock.Effect>
-                        <DropShadowEffect ShadowDepth="0"
+                        <DropShadowEffect x:Name="Shadow3" ShadowDepth="0"
                                       Color="Black"
                                       Opacity="1"
                                       BlurRadius="5"/>
@@ -75,66 +75,17 @@
                 </TextBlock>
                 <TextBlock x:Name="t4" Text="8" Grid.Column="4" Foreground="White" FontSize="130" TextAlignment="Center" Margin="0,-60">
                     <TextBlock.Effect>
-                        <DropShadowEffect ShadowDepth="0"
+                        <DropShadowEffect x:Name="Shadow4" ShadowDepth="0"
                                       Color="Black"
                                       Opacity="1"
                                       BlurRadius="5"/>
                     </TextBlock.Effect>
                 </TextBlock>
             </StackPanel>
-            <!--<Grid x:Name="ShortDate" IsHitTestVisible="False" Visibility="Visible" Margin="0, -60">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Label x:Name="t1" Content="8" Grid.Column="0" Foreground="White" FontSize="270">
-                    <Label.Effect>
-                        <DropShadowEffect ShadowDepth="0"
-                                      Color="Black"
-                                      Opacity="1"
-                                      BlurRadius="5"/>
-                    </Label.Effect>
-                </Label>
-                <Label x:Name="t2" Content="8" Grid.Column="1" Foreground="White" FontSize="270" >
-                    <Label.Effect>
-                        <DropShadowEffect ShadowDepth="0"
-                                      Color="Black"
-                                      Opacity="1"
-                                      BlurRadius="5"/>
-                    </Label.Effect>
-                </Label>
-                <Label x:Name="period" Content=":" Grid.Column="2" Foreground="White" FontSize="200" Margin="0, 20" >
-                    <Label.Effect>
-                        <DropShadowEffect ShadowDepth="0"
-                                      Color="Black"
-                                      Opacity="1"
-                                      BlurRadius="5"/>
-                    </Label.Effect>
-                </Label>
-                <Label x:Name="t3" Content="8" Grid.Column="3" Foreground="White" FontSize="270" >
-                    <Label.Effect>
-                        <DropShadowEffect ShadowDepth="0"
-                                      Color="Black"
-                                      Opacity="1"
-                                      BlurRadius="5"/>
-                    </Label.Effect>
-                </Label>
-                <Label x:Name="t4" Content="8" Grid.Column="4" Foreground="White" FontSize="270" >
-                    <Label.Effect>
-                        <DropShadowEffect ShadowDepth="0"
-                                      Color="Black"
-                                      Opacity="1"
-                                      BlurRadius="5"/>
-                    </Label.Effect>
-                </Label>
-            </Grid>-->
             <StackPanel x:Name="FullDate" Visibility="Visible" IsHitTestVisible="False" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock x:Name="SmallTime" Text="88:88" FontSize="110" TextAlignment="Center" Foreground="White">
                     <TextBlock.Effect>
-                        <DropShadowEffect ShadowDepth="0"
+                        <DropShadowEffect x:Name="Shadow5" ShadowDepth="0"
                                       Color="Black"
                                       Opacity="1"
                                       BlurRadius="5"/>
@@ -142,7 +93,7 @@
                 </TextBlock>
                 <TextBlock x:Name="Date" Text="Wed, 08 Apr 2020" FontSize="60" TextAlignment="Center" Foreground="White">
                     <TextBlock.Effect>
-                        <DropShadowEffect ShadowDepth="0"
+                        <DropShadowEffect x:Name="Shadow6" ShadowDepth="0"
                                       Color="Black"
                                       Opacity="1"
                                       BlurRadius="5"/>
