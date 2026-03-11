@@ -23,7 +23,7 @@
     <EmbeddedResource Include="Assets\Audio\chime-quiet.wav" />
     <EmbeddedResource Include="Assets\Audio\chime.wav" />
     <EmbeddedResource Include="Assets\Images\clock.ico" />
-    <EmbeddedResource Include="Assets\Images\clock.png" />
+    <Resource Include="Assets\Images\clock.png" />
   </ItemGroup>
 
   <ItemGroup>

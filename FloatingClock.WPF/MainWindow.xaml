@@ -9,9 +9,9 @@
         d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         Height="240" Width="630"
         MaxHeight="240" MaxWidth="630"
+        Icon="/Assets/Images/clock.png"
         WindowStyle="None"
         AllowsTransparency="True"
-        ShowInTaskbar="False"
         Background="Transparent" MouseDown="Window_MouseDown" ResizeMode="NoResize"
         Closing="Window_Closing"
         MouseUp="Window_MouseUp" MouseEnter="Window_MouseEnter"
@@ -40,19 +40,43 @@
             </Grid.RowDefinitions>
             <Label x:Name="lblCountdown" Foreground="Red" Content="{Binding TimeKeeper.Countdown, StringFormat={}{0:HH:mm:ss}}" d:Content="88:88:88" VerticalAlignment="Top" HorizontalAlignment="Left"
                    FontSize="18" FontWeight="Bold" Margin="2" Visibility="Collapsed"/>
+            <Label x:Name="lblDebug" Content="[DEBUG]" Foreground="Blue"
+                   VerticalAlignment="Top" HorizontalAlignment="Right"
+                   FontSize="25" Grid.RowSpan="2" Visibility="Collapsed">
+                <Label.Effect>
+                    <DropShadowEffect Color="Black"
+                                      ShadowDepth="0"
+                                      BlurRadius="5"
+                                      Opacity="1"/>
+                </Label.Effect>
+            </Label>
             <Label x:Name="lblTime"
                    Content="{Binding TimeKeeper.CurrentTime}"
                    ContentStringFormat="{}{0:HH:mm}"
                    d:Content="88:88"
-                   Grid.RowSpan="2" Margin="0,0,0,15"
+                   Grid.RowSpan="2" Margin="0"
                    Foreground="White" d:FontSize="150"
-                   VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                   VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
+                <Label.Effect>
+                    <DropShadowEffect Color="Black"
+                                      ShadowDepth="0"
+                                      BlurRadius="5"
+                                      Opacity="1"/>
+                </Label.Effect>
+            </Label>
             <Label x:Name="lblDate"
                    Content="{Binding TimeKeeper.CurrentTime}"
                    ContentStringFormat="{}{0:ddd, dd MMM yyyy}"
                    Grid.Row="2" d:Content="Wed, 08 Apr 2026" Margin="0,0,0,0"
                    Foreground="White" d:FontSize="60" Visibility="Collapsed"
-                   HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                   HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                <Label.Effect>
+                    <DropShadowEffect Color="Black"
+                                      ShadowDepth="0"
+                                      BlurRadius="5"
+                                      Opacity="1"/>
+                </Label.Effect>
+            </Label>
         </Grid>
     </Border>
 </Window>

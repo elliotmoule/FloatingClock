@@ -6,7 +6,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace FloatingClock.WPF;
 
@@ -29,6 +28,10 @@ public partial class MainWindow : Window
 
         _mainViewModel.MinuteReached += MinuteReached;
         _mainViewModel.HourReached += HourReached;
+
+#if DEBUG
+        lblDebug.Visibility = Visibility.Visible;
+#endif
     }
 
     private void HourReached()
@@ -53,21 +56,8 @@ public partial class MainWindow : Window
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        SetIcon();
         _mainViewModel.Load();
         SetLabelFontSizes(false);
-    }
-
-    private void SetIcon()
-    {
-        var resources = ResourceHelper.GetAllResourceNames();
-        var clockImageStream = ResourceHelper.GetManifestResourceStream(resources.FirstOrDefault(x => x.Contains("clock.png")));
-        var bitmap = new BitmapImage();
-        bitmap.BeginInit();
-        bitmap.StreamSource = clockImageStream;
-        bitmap.EndInit();
-
-        this.Icon = bitmap;
     }
 
     private void Window_MouseEnter(object sender, MouseEventArgs e)
@@ -110,7 +100,7 @@ public partial class MainWindow : Window
 
         lblTime.FontSize = lblTimeFontSize;
         lblDate.FontSize = lblDateFontSize;
-        lblTime.Margin = new Thickness(0, 0, 0, enter ? lblTimeBottomMargin : 0);
+        lblTime.Margin = new Thickness(0, -40, 0, enter ? lblTimeBottomMargin : 0);
     }
 
     private void Window_MouseUp(object sender, MouseButtonEventArgs e)
