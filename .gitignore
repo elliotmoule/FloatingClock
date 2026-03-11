@@ -2,3 +2,5 @@ FloatingClock/bin/
 FloatingClock/obj/
 .vs/
 packages/
+FloatingClock.WPF/obj/
+FloatingClock.WPF/bin/

@@ -1,0 +1,58 @@
+﻿<Window x:Class="FloatingClock.WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FloatingClock.WPF"
+        xmlns:viewmodels="clr-namespace:FloatingClock.WPF.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
+        Height="240" Width="630"
+        MaxHeight="240" MaxWidth="630"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ShowInTaskbar="False"
+        Background="Transparent" MouseDown="Window_MouseDown" ResizeMode="NoResize"
+        Closing="Window_Closing"
+        MouseUp="Window_MouseUp" MouseEnter="Window_MouseEnter"
+        MouseLeave="Window_MouseLeave"
+        Visibility="Visible" PreviewKeyDown="Window_PreviewKeyDown"
+        LocationChanged="Window_LocationChanged">
+    <Border x:Name="_border" BorderBrush="Transparent" BorderThickness="2">
+        <Grid Background="#02808080" Cursor="Hand">
+            <Grid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem x:Name="MenuItem_SetTimer" Header="Set Timer" Click="Menu_SetTimer_Click" />
+                    <MenuItem x:Name="MenuItem_CancelTimer" Header="Cancel Timer" Click="Menu_CancelTimer_Click" />
+                    <Separator />
+                    <MenuItem x:Name="MenuItem_ResetPosition" Header="Reset Location" Click="Menu_ResetPosition_Click" />
+                    <Separator />
+                    <MenuItem Header="Size">
+                        <MenuItem x:Name="MenuItem_AppSize_Small" Header="Small" Click="Menu_SetSize_Click" />
+                        <MenuItem x:Name="MenuItem_AppSize_Medium" Header="Regular" Click="Menu_SetSize_Click" />
+                        <MenuItem x:Name="MenuItem_AppSize_Large" Header="Large" Click="Menu_SetSize_Click" />
+                    </MenuItem>
+                </ContextMenu>
+            </Grid.ContextMenu>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1.5*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Label x:Name="lblCountdown" Foreground="Red" Content="{Binding TimeKeeper.Countdown, StringFormat={}{0:HH:mm:ss}}" d:Content="88:88:88" VerticalAlignment="Top" HorizontalAlignment="Left"
+                   FontSize="18" FontWeight="Bold" Margin="2" Visibility="Collapsed"/>
+            <Label x:Name="lblTime"
+                   Content="{Binding TimeKeeper.CurrentTime}"
+                   ContentStringFormat="{}{0:HH:mm}"
+                   d:Content="88:88"
+                   Grid.RowSpan="2" Margin="0,0,0,15"
+                   Foreground="White" d:FontSize="150"
+                   VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            <Label x:Name="lblDate"
+                   Content="{Binding TimeKeeper.CurrentTime}"
+                   ContentStringFormat="{}{0:ddd, dd MMM yyyy}"
+                   Grid.Row="2" d:Content="Wed, 08 Apr 2026" Margin="0,0,0,0"
+                   Foreground="White" d:FontSize="60" Visibility="Collapsed"
+                   HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+        </Grid>
+    </Border>
+</Window>
