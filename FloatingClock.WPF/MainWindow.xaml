@@ -19,7 +19,7 @@
         Visibility="Visible" PreviewKeyDown="Window_PreviewKeyDown"
         LocationChanged="Window_LocationChanged">
     <Border x:Name="_border" BorderBrush="Transparent" BorderThickness="2">
-        <Grid Background="#02808080" Cursor="Hand">
+        <Grid x:Name="grdMainWindow" Background="#02808080" Cursor="Hand">
             <Grid.ContextMenu>
                 <ContextMenu>
                     <MenuItem x:Name="MenuItem_SetTimer" Header="Set Timer" Click="Menu_SetTimer_Click" />

@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace FloatingClock.WPF;
 
@@ -18,6 +19,10 @@ public partial class MainWindow : Window
     private Color _borderHighlightColor = Colors.LawnGreen;
     private CancellationTokenSource? _cancellationTokenSource;
 
+    private DispatcherTimer _hoverTimer;
+    private readonly Brush _existingBackground;
+    private readonly SolidColorBrush _hoverBackground = new(Color.FromArgb(80, 0, 255, 65));
+
     public MainWindow()
     {
         InitializeComponent();
@@ -28,6 +33,7 @@ public partial class MainWindow : Window
 
         _mainViewModel.MinuteReached += MinuteReached;
         _mainViewModel.HourReached += HourReached;
+        _existingBackground = grdMainWindow.Background;
 
 #if DEBUG
         lblDebug.Visibility = Visibility.Visible;
@@ -58,18 +64,40 @@ public partial class MainWindow : Window
     {
         _mainViewModel.Load();
         SetLabelFontSizes(false);
+
+        _hoverTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(3),
+        };
+        _hoverTimer.Tick += HoverTimer_Tick;
+    }
+
+    private void HoverTimer_Tick(object? sender, EventArgs e)
+    {
+        _hoverTimer.Stop();
+        OnHovered();
+    }
+
+    private void OnHovered()
+    {
+        grdMainWindow.Background = _hoverBackground;
     }
 
     private void Window_MouseEnter(object sender, MouseEventArgs e)
     {
         SetLabelFontSizes(true);
         lblDate.Visibility = Visibility.Visible;
+
+        _hoverTimer.Start();
     }
 
     private void Window_MouseLeave(object sender, MouseEventArgs e)
     {
         SetLabelFontSizes(false);
         lblDate.Visibility = Visibility.Collapsed;
+
+        _hoverTimer.Stop();
+        grdMainWindow.Background = _existingBackground;
     }
 
     private void SetLabelFontSizes(bool enter)
