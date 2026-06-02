@@ -19,7 +19,8 @@ public partial class MainWindow : Window
     private Color _borderHighlightColor = Colors.LawnGreen;
     private CancellationTokenSource? _cancellationTokenSource;
 
-    private DispatcherTimer _hoverTimer;
+    private DispatcherTimer? _hoverTimer = null;
+    private bool _isHovered;
     private readonly Brush _existingBackground;
     private readonly SolidColorBrush _hoverBackground = new(Color.FromArgb(80, 0, 255, 65));
 
@@ -74,12 +75,13 @@ public partial class MainWindow : Window
 
     private void HoverTimer_Tick(object? sender, EventArgs e)
     {
-        _hoverTimer.Stop();
+        _hoverTimer?.Stop();
         OnHovered();
     }
 
     private void OnHovered()
     {
+        _isHovered = true;
         grdMainWindow.Background = _hoverBackground;
     }
 
@@ -88,7 +90,7 @@ public partial class MainWindow : Window
         SetLabelFontSizes(true);
         lblDate.Visibility = Visibility.Visible;
 
-        _hoverTimer.Start();
+        _hoverTimer?.Start();
     }
 
     private void Window_MouseLeave(object sender, MouseEventArgs e)
@@ -96,7 +98,8 @@ public partial class MainWindow : Window
         SetLabelFontSizes(false);
         lblDate.Visibility = Visibility.Collapsed;
 
-        _hoverTimer.Stop();
+        _isHovered = false;
+        _hoverTimer?.Stop();
         grdMainWindow.Background = _existingBackground;
     }
 
@@ -150,6 +153,12 @@ public partial class MainWindow : Window
     {
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
+        if (_isHovered && IsArrowKey(key))
+        {
+            Move(this, key);
+            return;
+        }
+
         if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift)
            || key != Key.Escape)
         {
@@ -157,6 +166,33 @@ public partial class MainWindow : Window
         }
 
         _mainViewModel.ResetLocation();
+    }
+
+    private static bool IsArrowKey(Key key) => key == Key.Left || key == Key.Right || key == Key.Up || key == Key.Down;
+
+    private static void Move(Window window, Key key)
+    {
+        var currentPosition = window.PointToScreen(new Point(0, 0));
+        var newLeft = currentPosition.X;
+        var newTop = currentPosition.Y;
+        if (key == Key.Left)
+        {
+            newLeft -= 10;
+        }
+        else if (key == Key.Right)
+        {
+            newLeft += 10;
+        }
+        else if (key == Key.Up)
+        {
+            newTop -= 10;
+        }
+        else if (key == Key.Down)
+        {
+            newTop += 10;
+        }
+        window.Left = newLeft;
+        window.Top = newTop;
     }
 
     private void Window_LocationChanged(object sender, EventArgs e)
